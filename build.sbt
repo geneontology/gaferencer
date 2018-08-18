@@ -30,7 +30,7 @@ libraryDependencies ++= {
       "io.circe"                   %% "circe-core"             % "0.9.3",
       "io.circe"                   %% "circe-generic"          % "0.9.3",
       "com.typesafe.scala-logging" %% "scala-logging"          % "3.9.0",
-//      "ch.qos.logback"             %  "logback-classic"        % "1.2.3",
-//      "org.codehaus.groovy"        %  "groovy-all"             % "2.5.2"
+      "ch.qos.logback"             %  "logback-classic"        % "1.2.3",
+      "org.codehaus.groovy"        %  "groovy-all"             % "2.5.1"
     )
 }

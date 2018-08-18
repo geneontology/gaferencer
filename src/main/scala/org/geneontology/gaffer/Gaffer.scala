@@ -19,13 +19,15 @@ import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
 import org.semanticweb.owlapi.reasoner.OWLReasoner
 
+import com.typesafe.scalalogging.LazyLogging
+
 import Vocab._
 import io.circe._
 import io.circe.syntax._
 import scalaz._
 import scalaz.Scalaz._
 
-object Gaffer {
+object Gaffer extends LazyLogging {
 
   val LinkRegex = raw"(.+)\((.+)\)".r
 
@@ -72,13 +74,13 @@ object Gaffer {
   def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: CurieUtil): Option[GAFTuple] = {
     val items = line.split("\t", -1)
     val maybeTaxon = items(12).split("|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
+    if (maybeTaxon.isEmpty) logger.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
     val aspect = items(8).trim
     val relation = AspectToGAFRelation(aspect)
     val term = Class(items(4).trim.replaceAllLiterally("GO:", GOPrefix))
-    val maybeLinks = items(16).split(",", -1).map(_.trim).map(parseLink(_, propertyByName, curieUtil)).toList.sequence.map(_.toSet).filter(_.nonEmpty)
+    val links = items(16).split(",", -1).map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil)).toSet
     for {
       taxon <- maybeTaxon
-      links <- maybeLinks
     } yield GAFTuple(taxon, Link(relation, term), links)
   }
 
@@ -92,7 +94,9 @@ object Gaffer {
         property <- maybeProperty
         filler <- maybeFiller
       } yield Link(property, filler)
-    case _ => None
+    case _ =>
+      logger.warn(s"Skipping badly formatted extension: $text")
+      None
   }
 
   def indexPropertiesByName(ontology: OWLOntology): Map[String, OWLObjectProperty] = (for {
