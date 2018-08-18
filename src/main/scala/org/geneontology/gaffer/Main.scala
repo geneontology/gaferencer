@@ -20,15 +20,15 @@ object Main extends App {
   case class Config(catalogPath: Option[File] = None, context: File = null, ontologyIRI: IRI = null, gafFile: File = null, outfile: File = null)
 
   val cli = new scopt.OptionParser[Config]("gaffer") {
-    opt[File]("catalog").optional().maxOccurs(1).action((f, conf) =>
+    opt[File]("catalog").text("Catalog file for ontology loading (optional)").optional().maxOccurs(1).action((f, conf) =>
       conf.copy(catalogPath = Some(f)))
-    arg[File]("context").required().maxOccurs(1).action((contextFile, conf) =>
+    arg[File]("context").text("Path to JSON-LD context file").required().maxOccurs(1).action((contextFile, conf) =>
       conf.copy(context = contextFile))
-    arg[String]("ontology").required().maxOccurs(1).action((ontIRI, conf) =>
+    arg[String]("ontology").text("Ontology IRI").required().maxOccurs(1).action((ontIRI, conf) =>
       conf.copy(ontologyIRI = IRI.create(ontIRI)))
-    arg[File]("gaf").required().maxOccurs(1).action((gaf, conf) =>
+    arg[File]("gaf").text("Path to GAF").required().maxOccurs(1).action((gaf, conf) =>
       conf.copy(gafFile = gaf))
-    arg[File]("outfile").required().maxOccurs(1).action((f, conf) =>
+    arg[File]("outfile").text("Path to output JSON").required().maxOccurs(1).action((f, conf) =>
       conf.copy(outfile = f))
   }
 
