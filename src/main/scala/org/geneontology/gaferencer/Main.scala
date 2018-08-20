@@ -1,4 +1,4 @@
-package org.geneontology.gaffer
+package org.geneontology.gaferencer
 
 import java.io.File
 
@@ -38,7 +38,7 @@ object Main extends App {
       config.catalogPath.foreach(catalog => manager.addIRIMapper(new CatalogXmlIRIMapper(catalog)))
       val ontology = manager.loadOntology(config.ontologyIRI)
       val curieUtil = CurieUtil.fromJsonLdFile(config.context.getAbsolutePath)
-      val gaferences = Gaffer.processGAF(config.gafFile, ontology, curieUtil)
+      val gaferences = Gaferencer.processGAF(config.gafFile, ontology, curieUtil)
       val json = gaferences.asJson
       val writer = Files.newBufferedWriter(config.outfile.toPath, StandardCharsets.UTF_8)
       writer.write(json.toString)

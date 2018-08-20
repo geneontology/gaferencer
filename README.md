@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/balhoff/gaffer.svg?branch=master)](https://travis-ci.org/balhoff/gaffer)
+[![Build Status](https://travis-ci.org/balhoff/gaferencer.svg?branch=master)](https://travis-ci.org/balhoff/gaferencer)
 
-# gaffer
+# gaferencer
 
 ```
-Usage: gaffer [options] context ontology gaf outfile
+Usage: gaferencer [options] context ontology gaf outfile
 
   --catalog <value>  Catalog file for ontology loading (optional)
   context            Path to JSON-LD context file

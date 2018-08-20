@@ -1,4 +1,4 @@
-package org.geneontology.gaffer
+package org.geneontology.gaferencer
 
 import java.io.File
 import java.util.Optional
@@ -26,8 +26,11 @@ import io.circe._
 import io.circe.syntax._
 import scalaz._
 import scalaz.Scalaz._
+import java.security.MessageDigest
+import java.util.Base64
+import java.nio.charset.StandardCharsets
 
-object Gaffer extends LazyLogging {
+object Gaferencer extends LazyLogging {
 
   val LinkRegex = raw"(.+)\((.+)\)".r
 
@@ -54,7 +57,7 @@ object Gaffer extends LazyLogging {
       Gaferences(
         tuple,
         reasoner.getSuperClasses(term, true).getFlattened.asScala
-          .flatMap(annotationClassesToLinks.get).toSet.filterNot(_ == tuple.annotation),
+          .flatMap(annotationClassesToLinks.get).toSet - tuple.annotation,
         true)
     else Gaferences(tuple, Set.empty, false)
     reasoner.dispose()
@@ -130,7 +133,14 @@ object Link {
 
 final case class GAFTuple(taxon: OWLClass, annotation: Link, extension: Set[Link]) {
 
-  def toExpression: OWLClassExpression = annotation.relation some (annotation.target and ObjectIntersectionOf(extension.map(_.toRestriction)) and (InTaxon some taxon))
+  def hashIRI: String = {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val hash = digest.digest(this.asJson.toString.getBytes(StandardCharsets.UTF_8))
+    s"http://example.org/${Base64.getEncoder().encodeToString(hash)}"
+  }
+
+  // We intersect with a dummy class to ensure this annotation is not subsumed by any other annotation (and thus blocked from deepenings)
+  def toExpression: OWLClassExpression = Class(hashIRI) and (annotation.relation some (annotation.target and ObjectIntersectionOf(extension.map(_.toRestriction)) and (InTaxon some taxon)))
 
 }
 

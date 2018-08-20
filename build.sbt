@@ -2,7 +2,7 @@ enablePlugins(JavaAppPackaging)
 
 organization  := "org.geneontology"
 
-name          := "gaffer"
+name          := "gaferencer"
 
 version       := "0.1-SNAPSHOT"
 
@@ -12,7 +12,7 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
-mainClass in Compile := Some("org.geneontology.gaffer.Main")
+mainClass in Compile := Some("org.geneontology.gaferencer.Main")
 
 javaOptions += "-Xmx10G"
 

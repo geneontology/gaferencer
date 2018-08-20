@@ -1,4 +1,4 @@
-package org.geneontology.gaffer
+package org.geneontology.gaferencer
 
 import org.phenoscape.scowl._
 import org.semanticweb.owlapi.model.OWLObjectProperty
