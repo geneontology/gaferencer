@@ -6,7 +6,7 @@ appender("SystemErr", ConsoleAppender) {
 }
 
 appender("FILE", FileAppender) {
-    file = "gaffer.log"
+    file = "gaferencer.log"
     append = true
     encoder(PatternLayoutEncoder) {
         pattern = "%d %level %logger - %msg%n"
