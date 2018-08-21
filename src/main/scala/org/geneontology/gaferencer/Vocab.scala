@@ -23,7 +23,7 @@ object Vocab {
   val PartOf = ObjectProperty("http://purl.obolibrary.org/obo/BFO_0000050")
   val IsActiveIn = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002432")
   val ColocalizesWith = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002325")
-  val AspectToGAFRelation: Map[String, OWLObjectProperty] = Map("BP" -> InvolvedIn, "MF" -> Enables, "CC" -> PartOf)
+  val AspectToGAFRelation: Map[String, OWLObjectProperty] = Map("P" -> InvolvedIn, "F" -> Enables, "C" -> PartOf)
   val AnnotationRelationsByAspect = Map(
     BP -> Set(ActsUpstreamOfOrWithin, ActsUpstreamOfOrWithinPos, ActsUpstreamOfOrWithinNeg, ActsUpstreamOf, ActsUpstreamOfPos, ActsUpstreamOfNeg, InvolvedIn),
     MF -> Set(Enables, ContributesTo),

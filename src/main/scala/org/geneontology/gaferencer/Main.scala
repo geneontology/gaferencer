@@ -14,6 +14,7 @@ import java.io.FileWriter
 import java.nio.file.Files
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
+import scala.io.Source
 
 object Main extends App {
 
@@ -38,7 +39,7 @@ object Main extends App {
       config.catalogPath.foreach(catalog => manager.addIRIMapper(new CatalogXmlIRIMapper(catalog)))
       val ontology = manager.loadOntology(config.ontologyIRI)
       val curieUtil = CurieUtil.fromJsonLdFile(config.context.getAbsolutePath)
-      val gaferences = Gaferencer.processGAF(config.gafFile, ontology, curieUtil)
+      val gaferences = Gaferencer.processGAF(Source.fromFile(config.gafFile, "utf-8"), ontology, curieUtil)
       val json = gaferences.asJson
       val writer = Files.newBufferedWriter(config.outfile.toPath, StandardCharsets.UTF_8)
       writer.write(json.toString)

@@ -29,14 +29,15 @@ import scalaz.Scalaz._
 import java.security.MessageDigest
 import java.util.Base64
 import java.nio.charset.StandardCharsets
+import org.semanticweb.owlapi.model.IRI
 
 object Gaferencer extends LazyLogging {
 
   val LinkRegex = raw"(.+)\((.+)\)".r
 
-  def processGAF(file: File, ontology: OWLOntology, curieUtil: CurieUtil): Set[Gaferences] = {
+  def processGAF(file: Source, ontology: OWLOntology, curieUtil: CurieUtil): Set[Gaferences] = {
     val propertyByName: Map[String, OWLObjectProperty] = indexPropertiesByName(ontology)
-    val tuples = Source.fromFile(file, "utf-8").getLines
+    val tuples = file.getLines
       .filterNot(_.startsWith("!"))
       .map(processLine(_, propertyByName, curieUtil))
       .flatten.toSet
@@ -51,6 +52,8 @@ object Gaferencer extends LazyLogging {
       .unzip.mapElements(_.flatten.toMap, _.flatten)
     manager.addAxioms(ontology, annotationAxioms.asJava)
     manager.addAxioms(ontology, tupleAxioms.asJava)
+    manager.saveOntology(ontology, IRI.create(new File("enhanced_ontology.ofn")))
+    reasoner.flush()
     val gaferences = for {
       (tuple, term) <- tuplesTerms
     } yield if (reasoner.isSatisfiable(term))
@@ -66,7 +69,7 @@ object Gaferencer extends LazyLogging {
 
   def materializeAnnotationRelations(branch: OWLClass, reasoner: OWLReasoner): (Map[OWLClass, Link], Set[OWLAxiom]) = {
     val (classToLink, axioms) = (for {
-      term <- reasoner.getSubClasses(branch, false).getFlattened.asScala + branch
+      term <- reasoner.getSubClasses(branch, false).getFlattened.asScala.filter(_.getIRI.toString.startsWith(GOPrefix)) + branch
       relation <- AnnotationRelationsByAspect(branch)
       annotationTerm = newUUIDClass()
       link = Link(relation, term)
@@ -76,12 +79,12 @@ object Gaferencer extends LazyLogging {
 
   def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: CurieUtil): Option[GAFTuple] = {
     val items = line.split("\t", -1)
-    val maybeTaxon = items(12).split("|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
+    val maybeTaxon = items(12).split(raw"\|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
     if (maybeTaxon.isEmpty) logger.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
     val aspect = items(8).trim
     val relation = AspectToGAFRelation(aspect)
     val term = Class(items(4).trim.replaceAllLiterally("GO:", GOPrefix))
-    val links = items(16).split(",", -1).map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil)).toSet
+    val links = items(15).split(",", -1).toSet[String].map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil).toSet)
     for {
       taxon <- maybeTaxon
     } yield GAFTuple(taxon, Link(relation, term), links)
@@ -91,12 +94,13 @@ object Gaferencer extends LazyLogging {
     case LinkRegex(relation, term) =>
       val maybeProperty = propertyByName.get(relation.trim)
       val termComponents = term.split(":", 2)
-      val maybeFiller = if (termComponents.size == 2) curieUtil.getIri(termComponents(0)).asScala.map(prefix => Class(s"$prefix${termComponents(1)}"))
-      else None
+      val maybeFiller = curieUtil.getIri(term).asScala.map(Class(_))
+      if (maybeFiller.isEmpty) logger.warn(s"Could not find IRI for annotation extension filler: $term")
       for {
         property <- maybeProperty
         filler <- maybeFiller
       } yield Link(property, filler)
+    case "" => None
     case _ =>
       logger.warn(s"Skipping badly formatted extension: $text")
       None
@@ -146,7 +150,7 @@ final case class GAFTuple(taxon: OWLClass, annotation: Link, extension: Set[Link
 
 object GAFTuple {
 
-  implicit val encoder: Encoder[GAFTuple] = Encoder.forProduct3("taxon", "annotation", "extension")(t => (t.taxon.getIRI.toString, t.annotation.asJson, t.extension.asJson))
+  implicit val encoder: Encoder[GAFTuple] = Encoder.forProduct3("taxon", "annotation", "extension")(t => (t.taxon.getIRI.toString, t.annotation, t.extension))
 
 }
 

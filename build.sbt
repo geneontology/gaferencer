@@ -16,7 +16,7 @@ mainClass in Compile := Some("org.geneontology.gaferencer.Main")
 
 javaOptions += "-Xmx10G"
 
-scriptClasspath := Seq("*")
+testFrameworks += new TestFramework("utest.runner.Framework")
 
 libraryDependencies ++= {
     Seq(
@@ -31,6 +31,7 @@ libraryDependencies ++= {
       "io.circe"                   %% "circe-generic"          % "0.9.3",
       "com.typesafe.scala-logging" %% "scala-logging"          % "3.9.0",
       "ch.qos.logback"             %  "logback-classic"        % "1.2.3",
-      "org.codehaus.groovy"        %  "groovy-all"             % "2.5.1"
+      "org.codehaus.groovy"        %  "groovy-all"             % "2.5.1",
+      "com.lihaoyi"                %% "utest"                  % "0.6.3"     % Test
     )
 }
