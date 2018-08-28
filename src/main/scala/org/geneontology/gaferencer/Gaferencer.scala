@@ -1,6 +1,9 @@
 package org.geneontology.gaferencer
 
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.util.Base64
 import java.util.Optional
 import java.util.UUID
 
@@ -10,6 +13,7 @@ import scala.io.Source
 import org.phenoscape.scowl._
 import org.prefixcommons.CurieUtil
 import org.semanticweb.elk.owlapi.ElkReasonerFactory
+import org.semanticweb.owlapi.model.IRI
 import org.semanticweb.owlapi.model.OWLAxiom
 import org.semanticweb.owlapi.model.OWLClass
 import org.semanticweb.owlapi.model.OWLClassExpression
@@ -26,10 +30,6 @@ import io.circe._
 import io.circe.syntax._
 import scalaz._
 import scalaz.Scalaz._
-import java.security.MessageDigest
-import java.util.Base64
-import java.nio.charset.StandardCharsets
-import org.semanticweb.owlapi.model.IRI
 
 object Gaferencer extends LazyLogging {
 

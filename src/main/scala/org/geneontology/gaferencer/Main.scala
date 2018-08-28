@@ -20,7 +20,7 @@ object Main extends App {
 
   case class Config(catalogPath: Option[File] = None, context: File = null, ontologyIRI: IRI = null, gafFile: File = null, outfile: File = null)
 
-  val cli = new scopt.OptionParser[Config]("gaffer") {
+  val cli = new scopt.OptionParser[Config]("gaferencer") {
     opt[File]("catalog").text("Catalog file for ontology loading (optional)").optional().maxOccurs(1).action((f, conf) =>
       conf.copy(catalogPath = Some(f)))
     arg[File]("context").text("Path to JSON-LD context file").required().maxOccurs(1).action((contextFile, conf) =>
