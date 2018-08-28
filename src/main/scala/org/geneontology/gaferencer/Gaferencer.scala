@@ -35,7 +35,7 @@ object Gaferencer extends LazyLogging {
 
   val LinkRegex = raw"(.+)\((.+)\)".r
 
-  def processGAF(file: Source, ontology: OWLOntology, curieUtil: CurieUtil): Set[Gaferences] = {
+  def processGAF(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[Gaferences] = {
     val propertyByName: Map[String, OWLObjectProperty] = indexPropertiesByName(ontology)
     val tuples = file.getLines
       .filterNot(_.startsWith("!"))
@@ -77,7 +77,7 @@ object Gaferencer extends LazyLogging {
     (classToLink.toMap, axioms.toSet)
   }
 
-  def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: CurieUtil): Option[GAFTuple] = {
+  def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[GAFTuple] = {
     val items = line.split("\t", -1)
     val maybeTaxon = items(12).split(raw"\|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
     if (maybeTaxon.isEmpty) logger.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
@@ -90,11 +90,11 @@ object Gaferencer extends LazyLogging {
     } yield GAFTuple(taxon, Link(relation, term), links)
   }
 
-  def parseLink(text: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: CurieUtil): Option[Link] = text match {
+  def parseLink(text: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[Link] = text match {
     case LinkRegex(relation, term) =>
       val maybeProperty = propertyByName.get(relation.trim)
       val termComponents = term.split(":", 2)
-      val maybeFiller = curieUtil.getIri(term).asScala.map(Class(_))
+      val maybeFiller = curieUtil.getIRI(term).map(Class(_))
       if (maybeFiller.isEmpty) logger.warn(s"Could not find IRI for annotation extension filler: $term")
       for {
         property <- maybeProperty
@@ -114,12 +114,6 @@ object Gaferencer extends LazyLogging {
   } yield underscoreLabel -> property).toMap
 
   def newUUIDClass(): OWLClass = Class(s"urn:uuid:${UUID.randomUUID().toString}")
-
-  implicit class OptionalConverter[T](val self: Optional[T]) extends AnyVal {
-
-    def asScala: Option[T] = if (self.isPresent) Some(self.get) else None
-
-  }
 
 }
 
