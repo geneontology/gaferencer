@@ -3,11 +3,13 @@
 # gaferencer
 
 ```
-Usage: gaferencer [options] context ontology gaf outfile
+Usage: gaferencer [options] ontology gaf outfile
 
-  --catalog <value>  Catalog file for ontology loading (optional)
-  context            Path to JSON-LD context file
-  ontology           Ontology IRI
-  gaf                Path to GAF
-  outfile            Path to output JSON
+  --catalog <value>        Catalog file for ontology loading (optional)
+  --contexts <first.jsonld>,<second.jsonld>...
+                           Paths to JSON-LD context files
+  --ontfile <value>        Ontology IRI is local filename (default false)
+  ontology                 Ontology IRI
+  gaf                      Path to GAF
+  outfile                  Path to output JSON
 ```
