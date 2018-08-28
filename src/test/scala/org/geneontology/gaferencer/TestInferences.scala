@@ -15,7 +15,7 @@ object TestInferences extends TestSuite {
     "Check inferred annotations" - {
       val manager = OWLManager.createOWLOntologyManager()
       val ontology = manager.loadOntologyFromOntologyDocument(this.getClass.getResourceAsStream("go_xp_predictor_test_subset.ofn"))
-      val cu = new CurieUtil(Map("GO" -> "http://purl.obolibrary.org/obo/GO_").asJava)
+      val cu = MultiCurieUtil(Seq(new CurieUtil(Map("GO" -> "http://purl.obolibrary.org/obo/GO_").asJava)))
       val gaferences = Gaferencer.processGAF(Source.fromInputStream(this.getClass.getResourceAsStream("xp_inference_test.gaf"), "UTF-8"), ontology, cu)
       gaferences.foreach(println)
     }
