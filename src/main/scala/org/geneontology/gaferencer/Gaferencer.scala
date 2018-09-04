@@ -3,49 +3,37 @@ package org.geneontology.gaferencer
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.Base64
-import java.util.Optional
-import java.util.UUID
+import java.util.{Base64, UUID}
+
+import com.typesafe.scalalogging.LazyLogging
+import io.circe._
+import io.circe.syntax._
+import org.geneontology.gaferencer.Vocab._
+import org.phenoscape.scowl._
+import org.semanticweb.elk.owlapi.ElkReasonerFactory
+import org.semanticweb.owlapi.model._
+import org.semanticweb.owlapi.model.parameters.Imports
+import org.semanticweb.owlapi.reasoner.OWLReasoner
+import scalaz.Scalaz._
 
 import scala.collection.JavaConverters._
 import scala.io.Source
-
-import org.phenoscape.scowl._
-import org.prefixcommons.CurieUtil
-import org.semanticweb.elk.owlapi.ElkReasonerFactory
-import org.semanticweb.owlapi.model.IRI
-import org.semanticweb.owlapi.model.OWLAxiom
-import org.semanticweb.owlapi.model.OWLClass
-import org.semanticweb.owlapi.model.OWLClassExpression
-import org.semanticweb.owlapi.model.OWLObjectProperty
-import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom
-import org.semanticweb.owlapi.model.OWLOntology
-import org.semanticweb.owlapi.model.parameters.Imports
-import org.semanticweb.owlapi.reasoner.OWLReasoner
-
-import com.typesafe.scalalogging.LazyLogging
-
-import Vocab._
-import io.circe._
-import io.circe.syntax._
-import scalaz._
-import scalaz.Scalaz._
+import scala.util.matching.Regex
 
 object Gaferencer extends LazyLogging {
 
-  val LinkRegex = raw"(.+)\((.+)\)".r
+  val LinkRegex: Regex = raw"(.+)\((.+)\)".r
 
   def processGAF(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[Gaferences] = {
     val propertyByName: Map[String, OWLObjectProperty] = indexPropertiesByName(ontology)
     val tuples = file.getLines
       .filterNot(_.startsWith("!"))
-      .map(processLine(_, propertyByName, curieUtil))
-      .flatten.toSet
-    val (tuplesTerms, tupleAxioms) = (tuples.map { t =>
+      .flatMap(processLine(_, propertyByName, curieUtil)).toSet
+    val (tuplesTerms, tupleAxioms) = tuples.map { t =>
       val term = newUUIDClass()
       val axiom = term EquivalentTo t.toExpression
       (t -> term, axiom)
-    }).unzip
+    }.unzip
     val manager = ontology.getOWLOntologyManager
     val reasoner = new ElkReasonerFactory().createReasoner(ontology)
     val (annotationClassesToLinks, annotationAxioms) = AnnotationRelationsByAspect.keySet.map(materializeAnnotationRelations(_, reasoner))
@@ -93,7 +81,6 @@ object Gaferencer extends LazyLogging {
   def parseLink(text: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[Link] = text match {
     case LinkRegex(relation, term) =>
       val maybeProperty = propertyByName.get(relation.trim)
-      val termComponents = term.split(":", 2)
       val maybeFiller = curieUtil.getIRI(term).map(Class(_))
       if (maybeFiller.isEmpty) logger.warn(s"Could not find IRI for annotation extension filler: $term")
       for {
@@ -108,7 +95,7 @@ object Gaferencer extends LazyLogging {
 
   def indexPropertiesByName(ontology: OWLOntology): Map[String, OWLObjectProperty] = (for {
     ont <- ontology.getImportsClosure.asScala
-    property <- ontology.getObjectPropertiesInSignature(Imports.INCLUDED).asScala
+    property <- ont.getObjectPropertiesInSignature(Imports.INCLUDED).asScala
     AnnotationAssertion(_, RDFSLabel, _, label ^^ _) <- ontology.getAnnotationAssertionAxioms(property.getIRI).asScala
     underscoreLabel = label.replaceAllLiterally(" ", "_")
   } yield underscoreLabel -> property).toMap
@@ -134,7 +121,7 @@ final case class GAFTuple(taxon: OWLClass, annotation: Link, extension: Set[Link
   def hashIRI: String = {
     val digest = MessageDigest.getInstance("SHA-256")
     val hash = digest.digest(this.asJson.toString.getBytes(StandardCharsets.UTF_8))
-    s"http://example.org/${Base64.getEncoder().encodeToString(hash)}"
+    s"http://example.org/${Base64.getEncoder.encodeToString(hash)}"
   }
 
   // We intersect with a dummy class to ensure this annotation is not subsumed by any other annotation (and thus blocked from deepenings)

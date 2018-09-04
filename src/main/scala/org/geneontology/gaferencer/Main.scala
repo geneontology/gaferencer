@@ -1,19 +1,16 @@
 package org.geneontology.gaferencer
 
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 
+import io.circe.generic.auto._
+import io.circe.syntax._
 import org.obolibrary.robot.CatalogXmlIRIMapper
 import org.prefixcommons.CurieUtil
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.IRI
 
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.syntax._
-import java.io.FileWriter
-import java.nio.file.Files
-import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
 import scala.io.Source
 
 object Main extends App {
