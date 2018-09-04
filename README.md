@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/balhoff/gaferencer.svg?branch=master)](https://travis-ci.org/balhoff/gaferencer)
+[![Build Status](https://travis-ci.org/geneontology/gaferencer.svg?branch=master)](https://travis-ci.org/geneontology/gaferencer)
 
 # gaferencer
 
