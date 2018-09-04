@@ -44,13 +44,10 @@ object Gaferencer extends LazyLogging {
     reasoner.flush()
     val gaferences = for {
       (tuple, term) <- tuplesTerms
-    } yield if (reasoner.isSatisfiable(term))
-      Gaferences(
-        tuple,
-        reasoner.getSuperClasses(term, true).getFlattened.asScala
-          .flatMap(annotationClassesToLinks.get).toSet - tuple.annotation,
-        true)
-    else Gaferences(tuple, Set.empty, false)
+      isSatisfiable = reasoner.isSatisfiable(term)
+      inferredAnnotations = if (isSatisfiable) reasoner.getSuperClasses(term, true).getFlattened.asScala.flatMap(annotationClassesToLinks.get).toSet - tuple.annotation else Set.empty[Link]
+      if inferredAnnotations.nonEmpty || !isSatisfiable
+    } yield Gaferences(tuple, inferredAnnotations, isSatisfiable)
     reasoner.dispose()
     gaferences
   }
@@ -87,8 +84,8 @@ object Gaferencer extends LazyLogging {
         property <- maybeProperty
         filler <- maybeFiller
       } yield Link(property, filler)
-    case "" => None
-    case _ =>
+    case ""                        => None
+    case _                         =>
       logger.warn(s"Skipping badly formatted extension: $text")
       None
   }
