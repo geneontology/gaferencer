@@ -55,6 +55,7 @@ object Gaferencer extends LazyLogging {
       (annotation, term) <- annotationsToTerms
       isSatisfiable = reasoner.isSatisfiable(term)
       inferredAnnotations = if (isSatisfiable) reasoner.getSuperClasses(term, true).getFlattened.asScala.flatMap(possibleAnnotationClassesToLinks.get).toSet - annotation.annotation else Set.empty[Link]
+      if inferredAnnotations.nonEmpty
     } yield Gaferences(annotation, inferredAnnotations)
     reasoner.dispose()
     (gaferences, taxonChecks)
