@@ -21,11 +21,11 @@ object TestInferences extends TestSuite {
       val manager = OWLManager.createOWLOntologyManager()
       val ontology = manager.loadOntologyFromOntologyDocument(this.getClass.getResourceAsStream("go_xp_predictor_test_subset.ofn"))
       val cu = MultiCurieUtil(Seq(new CurieUtil(Map("GO" -> "http://purl.obolibrary.org/obo/GO_").asJava)))
-      val gaferences = Gaferencer.processGAF(Source.fromInputStream(this.getClass.getResourceAsStream("xp_inference_test.gaf"), "UTF-8"), ontology, cu)
-      val grouped = gaferences.groupBy(_.tuple)
-      assert(grouped(GAFTuple(Class("http://purl.obolibrary.org/obo/NCBITaxon_10090"), Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0006412")), Set(Link(OccursIn, Class("http://purl.obolibrary.org/obo/GO_0005739")))))
+      val (gaferences, _) = Gaferencer.processGAF(Source.fromInputStream(this.getClass.getResourceAsStream("xp_inference_test.gaf"), "UTF-8"), ontology, cu)
+      val grouped = gaferences.groupBy(_.annotation)
+      assert(grouped(ExtendedAnnotation(Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0006412")), Set(Link(OccursIn, Class("http://purl.obolibrary.org/obo/GO_0005739")))))
         .head.inferences(Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0032543"))))
-      assert(grouped(GAFTuple(Class("http://purl.obolibrary.org/obo/NCBITaxon_10090"), Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0048585")), Set(Link(Regulates, Class("http://purl.obolibrary.org/obo/GO_0051594")))))
+      assert(grouped(ExtendedAnnotation(Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0048585")), Set(Link(Regulates, Class("http://purl.obolibrary.org/obo/GO_0051594")))))
         .head.inferences(Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_2000970"))))
     }
 
@@ -33,10 +33,10 @@ object TestInferences extends TestSuite {
       val manager = OWLManager.createOWLOntologyManager()
       val ontology = manager.loadOntologyFromOntologyDocument(this.getClass.getResourceAsStream("taxon_constraint_test.ofn"))
       val cu = MultiCurieUtil(Seq(new CurieUtil(Map("GO" -> "http://purl.obolibrary.org/obo/GO_").asJava)))
-      val gaferences = Gaferencer.processGAF(Source.fromInputStream(this.getClass.getResourceAsStream("taxon_constraint_test.gaf"), "UTF-8"), ontology, cu)
-      val grouped = gaferences.groupBy(_.tuple)
-      assert(grouped(GAFTuple(Class("http://purl.obolibrary.org/obo/NCBITaxon_10090"), Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0009272")), Set.empty)).head.satisfiable == false)
-      assert(grouped.get(GAFTuple(Class("http://purl.obolibrary.org/obo/NCBITaxon_40296"), Link(InvolvedIn, Class("http://purl.obolibrary.org/obo/GO_0009272")), Set.empty)).isEmpty)
+      val (_, taxonChecks) = Gaferencer.processGAF(Source.fromInputStream(this.getClass.getResourceAsStream("taxon_constraint_test.gaf"), "UTF-8"), ontology, cu)
+      val grouped = taxonChecks.groupBy(c => c.term -> c.taxon)
+      assert(!grouped.getOrElse(Class("http://purl.obolibrary.org/obo/GO_0009272") -> Class("http://purl.obolibrary.org/obo/NCBITaxon_10090"), Set.empty).head.satisfiable)
+      assert(grouped.getOrElse(Class("http://purl.obolibrary.org/obo/GO_0009272") -> Class("http://purl.obolibrary.org/obo/NCBITaxon_40296"), Set.empty).isEmpty)
     }
 
   }
