@@ -147,27 +147,6 @@ final case class TermWithTaxon(term: OWLClass, taxon: OWLClass) {
 
 }
 
-final case class GAFTuple(taxon: OWLClass, annotation: Link, extension: Set[Link]) {
-
-  def hashIRI: String = {
-    val digest = MessageDigest.getInstance("SHA-256")
-    val hash = digest.digest(this.asJson.toString.getBytes(StandardCharsets.UTF_8))
-    s"http://example.org/${Base64.getEncoder.encodeToString(hash)}"
-  }
-
-  // We intersect with a dummy class to ensure this annotation is not subsumed by any other annotation (and thus blocked from deepenings)
-  def toExpression: OWLClassExpression = Class(hashIRI) and (annotation.relation some (annotation.target and ObjectIntersectionOf(extension.map(_.toRestriction)) and (InTaxon some taxon)))
-
-
-
-}
-
-object GAFTuple {
-
-  implicit val encoder: Encoder[GAFTuple] = Encoder.forProduct3("taxon", "annotation", "extension")(t => (t.taxon.getIRI.toString, t.annotation, t.extension))
-
-}
-
 final case class Gaferences(annotation: ExtendedAnnotation, inferences: Set[Link])
 
 final case class TaxonCheck(term: OWLClass, taxon: OWLClass, satisfiable: Boolean)
