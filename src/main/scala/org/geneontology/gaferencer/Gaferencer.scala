@@ -52,7 +52,7 @@ object Gaferencer extends LazyLogging {
   }
 
   def processTaxonList(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[TaxonCheck] = {
-    val taxa = file.getLines.flatMap(l => curieUtil.getIRI(l.trim).map(Class(_))).toSet.take(5) //FIXME
+    val taxa = file.getLines.flatMap(l => curieUtil.getIRI(l.trim).map(Class(_))).toSet
     logger.info(s"Checking ${taxa.size} taxon terms")
     val reasoner = new ElkReasonerFactory().createReasoner(ontology)
     val goTerms = Set(MF, BP, CC).flatMap(reasoner.getSubClasses(_, false).getFlattened.asScala)
