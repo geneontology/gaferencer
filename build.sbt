@@ -23,6 +23,7 @@ libraryDependencies ++= {
       "net.sourceforge.owlapi"     %  "owlapi-distribution"    % "4.5.4",
       "org.phenoscape"             %% "scowl"                  % "1.3.1",
       "org.semanticweb.elk"        %  "elk-owlapi"             % "0.4.3" exclude("org.slf4j", "slf4j-log4j12"),
+      "org.geneontology"           %% "whelk"                  % "0.1.3",
       "org.obolibrary.robot"       %  "robot-core"             % "1.1.0" exclude("org.slf4j", "slf4j-log4j12"),
       "org.prefixcommons"          %  "curie-util"             % "0.0.2",
       "org.scalaz"                 %% "scalaz-core"            % "7.2.24",

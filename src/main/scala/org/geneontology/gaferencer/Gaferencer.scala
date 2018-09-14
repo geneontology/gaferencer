@@ -2,12 +2,14 @@ package org.geneontology.gaferencer
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import java.util
 import java.util.{Base64, UUID}
 
 import com.typesafe.scalalogging.LazyLogging
 import io.circe._
 import io.circe.syntax._
 import org.geneontology.gaferencer.Vocab._
+import org.geneontology.whelk.owlapi.WhelkOWLReasonerFactory
 import org.phenoscape.scowl._
 import org.semanticweb.elk.owlapi.ElkReasonerFactory
 import org.semanticweb.owlapi.model._
@@ -54,8 +56,10 @@ object Gaferencer extends LazyLogging {
   def processTaxonList(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[TaxonCheck] = {
     val taxa = file.getLines.flatMap(l => curieUtil.getIRI(l.trim).map(Class(_))).toSet
     logger.info(s"Checking ${taxa.size} taxon terms")
+
     val reasoner = new ElkReasonerFactory().createReasoner(ontology)
     val goTerms = Set(MF, BP, CC).flatMap(reasoner.getSubClasses(_, false).getFlattened.asScala)
+    reasoner.dispose()
     logger.info(s"Checking ${goTerms.size} GO terms")
     val termsWithTaxa = for {
       goTerm <- goTerms
@@ -65,14 +69,16 @@ object Gaferencer extends LazyLogging {
     val (taxaTermsToTerms, taxaAxioms) = nameExpressions(termsWithTaxa)
     val manager = ontology.getOWLOntologyManager
     manager.addAxioms(ontology, taxaAxioms.asJava)
-    reasoner.flush()
-    val unsatisfiable = reasoner.getUnsatisfiableClasses.getEntities.asScala
+    //reasoner.flush()
+    val whelk = new WhelkOWLReasonerFactory().createReasoner(ontology)
+    val unsatisfiable = whelk.getUnsatisfiableClasses.getEntities.asScala
     logger.info(s"Unsatisfiable classes: ${unsatisfiable.size}")
     val taxonChecks = (for {
       (termWithTaxon, taxonomicClass) <- taxaTermsToTerms
       isUnsatisfiable = unsatisfiable(taxonomicClass)
     } yield TaxonCheck(termWithTaxon.term, termWithTaxon.taxon, !isUnsatisfiable)).toSet
-    reasoner.dispose()
+    whelk.dispose()
+    //reasoner.dispose()
     taxonChecks
   }
 
