@@ -66,20 +66,17 @@ object Gaferencer extends LazyLogging {
       taxon <- taxa
     } yield TermWithTaxon(goTerm, taxon)
     logger.info(s"Checking ${termsWithTaxa.size} combinations")
-    val (taxaTermsToTerms, taxaAxioms) = nameExpressions(termsWithTaxa)
-    val manager = ontology.getOWLOntologyManager
-    manager.addAxioms(ontology, taxaAxioms.asJava)
+    //val (taxaTermsToTerms, taxaAxioms) = nameExpressions(termsWithTaxa)
+    //val manager = ontology.getOWLOntologyManager
+    //manager.addAxioms(ontology, taxaAxioms.asJava)
     //reasoner.flush()
     val whelk = new WhelkOWLReasonerFactory().createReasoner(ontology)
-    val unsatisfiable = whelk.getUnsatisfiableClasses.getEntities.asScala
-    logger.info(s"Unsatisfiable classes: ${unsatisfiable.size}")
-    val taxonChecks = (for {
-      (termWithTaxon, taxonomicClass) <- taxaTermsToTerms
-      isUnsatisfiable = unsatisfiable(taxonomicClass)
-    } yield TaxonCheck(termWithTaxon.term, termWithTaxon.taxon, !isUnsatisfiable)).toSet
+    val taxonChecks = termsWithTaxa.par.map(t => TaxonCheck(t.term, t.taxon, whelk.isSatisfiable(t.toExpression)))
+    val unsatisfiable = taxonChecks.count(!_.satisfiable)
+    logger.info(s"Unsatisfiable classes: ${unsatisfiable}")
     whelk.dispose()
     //reasoner.dispose()
-    taxonChecks
+    taxonChecks.seq
   }
 
   def parseGAF(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): (Set[TermWithTaxon], Set[ExtendedAnnotation]) = {
