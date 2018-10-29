@@ -10,6 +10,8 @@ case class MultiCurieUtil(curieUtils: Seq[CurieUtil]) {
 
   def getIRI(curie: String): Option[String] = curieUtils.toStream.flatMap(_.getIri(curie).asScala).headOption
 
+  def getCURIE(iri: String): Option[String] = curieUtils.toStream.flatMap(_.getCurie(iri).asScala).headOption
+
 }
 
 object MultiCurieUtil {

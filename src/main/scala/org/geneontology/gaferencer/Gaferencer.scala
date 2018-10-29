@@ -137,18 +137,23 @@ object Gaferencer extends LazyLogging {
 
   def newUUIDClass(): OWLClass = Class(s"urn:uuid:${UUID.randomUUID().toString}")
 
-  def taxonChecksToTable(checks: Iterable[TaxonCheck]): String = {
+  def taxonChecksToTable(checks: Iterable[TaxonCheck], curieUtil: MultiCurieUtil): String = {
     val grouped = checks.groupBy(_.term)
     val sortedTaxa = checks.map(_.taxon).toSet[OWLClass].toSeq.sortBy(_.getIRI.toString)
     val sortedTerms = grouped.keys.toSeq.sortBy(_.getIRI.toString)
-    val header = ("GOterm" +: sortedTaxa.map(_.getIRI.toString)).mkString("\t")
+    val header = ("GOterm" +: sortedTaxa.map { t =>
+      val iri = t.getIRI.toString
+      curieUtil.getCURIE(iri).getOrElse(iri)
+    }).mkString("\t")
     val table = sortedTerms.map { goTerm =>
       val groupedByTaxon = grouped(goTerm).groupBy(_.taxon)
       val values = sortedTaxa.map { taxon =>
         val check = groupedByTaxon(taxon).head
         if (check.satisfiable) "1" else "0"
       }.mkString("\t")
-      s"${goTerm.getIRI.toString}\t$values"
+      val goIRI = goTerm.getIRI.toString
+      val goID = curieUtil.getCURIE(goIRI).getOrElse(goIRI)
+      s"$goID\t$values"
     }.mkString("\n")
     s"$header\n$table"
   }

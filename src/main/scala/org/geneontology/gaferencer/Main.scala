@@ -80,7 +80,7 @@ object Main extends App {
           }
         case "taxa" =>
           val checks = Gaferencer.processTaxonList(Source.fromFile(config.taxonList, "utf-8"), ontology, curieUtil)
-          val table = Gaferencer.taxonChecksToTable(checks)
+          val table = Gaferencer.taxonChecksToTable(checks, curieUtil)
           val writer = Files.newBufferedWriter(config.taxonTable.toPath, StandardCharsets.UTF_8)
           writer.write(table)
           writer.close()
