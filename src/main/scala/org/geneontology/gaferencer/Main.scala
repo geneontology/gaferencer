@@ -21,8 +21,7 @@ object Main extends App {
                      ontfile: Boolean = false,
                      ontologyIRI: String = null,
                      gafFile: File = null,
-                     taxonViolationsOutfile: Option[File] = None,
-                     inferredAnnotationsOutfile: Option[File] = None,
+                     inferredAnnotationsOutfile: File = null,
                      taxonList: File = null,
                      taxonTable: File = null,
                      mode: String = "gaf")
@@ -36,14 +35,12 @@ object Main extends App {
       conf.copy(ontfile = f))
     cmd("gaf").text("compute GAF inferences").action((_, c) => c.copy(mode = "gaf"))
       .children(
-        opt[File](name = "output-taxon-violations").text("Output taxon violations to a JSON file").optional().maxOccurs(1).action((file, conf) =>
-          conf.copy(taxonViolationsOutfile = Some(file))),
-        opt[File](name = "output-inferred-annotations").text("Output inferred annotations to a JSON file").optional().maxOccurs(1).action((file, conf) =>
-          conf.copy(inferredAnnotationsOutfile = Some(file))),
         arg[String]("<ontology>").text("Ontology IRI").required().maxOccurs(1).action((ontIRI, conf) =>
           conf.copy(ontologyIRI = ontIRI)),
         arg[File]("<gaf>").text("Path to GAF").required().maxOccurs(1).action((gaf, conf) =>
-          conf.copy(gafFile = gaf)))
+          conf.copy(gafFile = gaf)),
+        arg[File](name = "<annotation-inferences-outfile>").text("File to output annotation inferences (JSON)").required().maxOccurs(1).action((file, conf) =>
+          conf.copy(inferredAnnotationsOutfile = file)))
     cmd("taxa").text("compute taxon-by-GO table").action((_, c) => c.copy(mode = "taxa"))
       .children(
         arg[String]("<ontology>").text("Ontology IRI").required().maxOccurs(1).action((ontIRI, conf) =>
@@ -65,19 +62,11 @@ object Main extends App {
       val curieUtil = MultiCurieUtil(config.contexts.map(f => CurieUtil.fromJsonLdFile(f.getAbsolutePath)))
       config.mode match {
         case "gaf"  =>
-          val (gaferences, taxonChecks) = Gaferencer.processGAF(Source.fromFile(config.gafFile, "utf-8"), ontology, curieUtil)
-          config.inferredAnnotationsOutfile.foreach { f =>
-            val json = gaferences.asJson
-            val writer = Files.newBufferedWriter(f.toPath, StandardCharsets.UTF_8)
-            writer.write(json.toString)
-            writer.close()
-          }
-          config.taxonViolationsOutfile.foreach { f =>
-            val json = taxonChecks.asJson
-            val writer = Files.newBufferedWriter(f.toPath, StandardCharsets.UTF_8)
-            writer.write(json.toString)
-            writer.close()
-          }
+          val gaferences = Gaferencer.processGAF(Source.fromFile(config.gafFile, "utf-8"), ontology, curieUtil)
+          val json = gaferences.asJson
+          val writer = Files.newBufferedWriter(config.inferredAnnotationsOutfile.toPath, StandardCharsets.UTF_8)
+          writer.write(json.toString)
+          writer.close()
         case "taxa" =>
           val checks = Gaferencer.processTaxonList(Source.fromFile(config.taxonList, "utf-8"), ontology, curieUtil)
           val table = Gaferencer.taxonChecksToTable(checks, curieUtil)
