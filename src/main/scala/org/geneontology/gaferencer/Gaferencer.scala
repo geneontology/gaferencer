@@ -23,10 +23,10 @@ object Gaferencer extends LazyLogging {
 
   val LinkRegex: Regex = raw"(.+)\((.+)\)".r
 
-  def processGAF(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): (Set[Gaferences], Set[TaxonCheck]) = {
+  def processGAF(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[Gaferences] = {
     val (termsWithTaxa, extendedAnnotations) = parseGAF(file, ontology, curieUtil)
     val (taxaTermsToTerms, taxaAxioms) = nameExpressions(termsWithTaxa)
-    val (annotationsToTerms, annotationsAxioms) = nameExpressions(extendedAnnotations.filter(_.extension.nonEmpty))
+    val (annotationsToTerms, annotationsAxioms) = nameExpressions(extendedAnnotations)
     val manager = ontology.getOWLOntologyManager
     val reasoner = new ElkReasonerFactory().createReasoner(ontology)
     val (possibleAnnotationClassesToLinks, possibleAnnotationAxioms) = AnnotationRelationsByAspect.keySet.map(materializeAnnotationRelations(_, reasoner))
@@ -36,19 +36,19 @@ object Gaferencer extends LazyLogging {
     manager.addAxioms(ontology, annotationsAxioms.asJava)
     reasoner.flush()
     val unsatisfiable = reasoner.getUnsatisfiableClasses.getEntities.asScala
-    val taxonChecks = (for {
+    val unsatisfiableTermsWithTaxa = (for {
       (termWithTaxon, taxonomicClass) <- taxaTermsToTerms
-      isUnsatisfiable = unsatisfiable(taxonomicClass)
-      if isUnsatisfiable
-    } yield TaxonCheck(termWithTaxon.term, termWithTaxon.taxon, !isUnsatisfiable)).toSet
+      if unsatisfiable(taxonomicClass)
+    } yield termWithTaxon).toSet
     val gaferences = (for {
       (annotation, term) <- annotationsToTerms
       isSatisfiable = !unsatisfiable(term)
+      unsatisfiableTaxon = unsatisfiableTermsWithTaxa(TermWithTaxon(annotation.annotation.target, annotation.taxon))
       inferredAnnotations = if (isSatisfiable) reasoner.getSuperClasses(term, true).getFlattened.asScala.flatMap(possibleAnnotationClassesToLinks.get).toSet - annotation.annotation else Set.empty[Link]
-      if inferredAnnotations.nonEmpty
-    } yield Gaferences(annotation, inferredAnnotations)).toSet
+      if inferredAnnotations.nonEmpty || !isSatisfiable
+    } yield Gaferences(annotation, inferredAnnotations, isSatisfiable, unsatisfiableTaxon)).toSet
     reasoner.dispose()
-    (gaferences, taxonChecks)
+    gaferences
   }
 
   def processTaxonList(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[TaxonCheck] = {
@@ -110,7 +110,7 @@ object Gaferencer extends LazyLogging {
     val links = items(15).split(",", -1).toSet[String].map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil).toSet)
     for {
       taxon <- maybeTaxon
-    } yield (TermWithTaxon(term, taxon), ExtendedAnnotation(Link(relation, term), links))
+    } yield (TermWithTaxon(term, taxon), ExtendedAnnotation(Link(relation, term), taxon, links))
   }
 
   def parseLink(text: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[Link] = text match {
@@ -178,7 +178,7 @@ sealed trait Expressable {
 
 }
 
-final case class ExtendedAnnotation(annotation: Link, extension: Set[Link]) extends Expressable {
+final case class ExtendedAnnotation(annotation: Link, taxon: OWLClass, extension: Set[Link]) extends Expressable {
 
   def hashIRI: String = {
     val digest = MessageDigest.getInstance("SHA-256")
@@ -187,13 +187,13 @@ final case class ExtendedAnnotation(annotation: Link, extension: Set[Link]) exte
   }
 
   // We intersect with a dummy class to ensure this annotation is not subsumed by any other annotation (and thus blocked from deepenings)
-  def toExpression: OWLClassExpression = Class(hashIRI) and (annotation.relation some (annotation.target and ObjectIntersectionOf(extension.map(_.toRestriction))))
+  def toExpression: OWLClassExpression = Class(hashIRI) and (annotation.relation some ObjectIntersectionOf(Set(annotation.target, InTaxon some taxon) ++ extension.map(_.toRestriction)))
 
 }
 
 object ExtendedAnnotation {
 
-  implicit val encoder: Encoder[ExtendedAnnotation] = Encoder.forProduct2("annotation", "extension")(ea => (ea.annotation, ea.extension))
+  implicit val encoder: Encoder[ExtendedAnnotation] = Encoder.forProduct3("annotation", "taxon", "extension")(ea => (ea.annotation, ea.taxon.getIRI.toString, ea.extension))
 
 }
 
@@ -203,7 +203,7 @@ final case class TermWithTaxon(term: OWLClass, taxon: OWLClass) extends Expressa
 
 }
 
-final case class Gaferences(annotation: ExtendedAnnotation, inferences: Set[Link])
+final case class Gaferences(annotation: ExtendedAnnotation, inferences: Set[Link], satisfiable: Boolean, taxonProblem: Boolean)
 
 final case class TaxonCheck(term: OWLClass, taxon: OWLClass, satisfiable: Boolean)
 
