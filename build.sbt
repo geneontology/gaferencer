@@ -4,9 +4,9 @@ organization  := "org.geneontology"
 
 name          := "gaferencer"
 
-version       := "0.2"
+version       := "0.3"
 
-scalaVersion  := "2.12.6"
+scalaVersion  := "2.12.7"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
