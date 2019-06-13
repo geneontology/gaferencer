@@ -100,17 +100,18 @@ object Gaferencer extends LazyLogging {
     (classToLink.toMap, axioms.toSet)
   }
 
-  def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[(TermWithTaxon, ExtendedAnnotation)] = {
+  def processLine(line: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Set[(TermWithTaxon, ExtendedAnnotation)] = {
     val items = line.split("\t", -1)
     val maybeTaxon = items(12).split(raw"\|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
     if (maybeTaxon.isEmpty) logger.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
     val aspect = items(8).trim
     val relation = AspectToGAFRelation(aspect)
     val term = Class(items(4).trim.replaceAllLiterally("GO:", GOPrefix))
-    val links = items(15).split(",", -1).toSet[String].map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil).toSet)
-    for {
-      taxon <- maybeTaxon
-    } yield (TermWithTaxon(term, taxon), ExtendedAnnotation(Link(relation, term), taxon, links))
+    (for {
+      taxon <- maybeTaxon.toIterable
+      conjunction <- items(15).split("\\|", -1)
+      links = conjunction.split(",", -1).toSet[String].map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil).toSet)
+    } yield (TermWithTaxon(term, taxon), ExtendedAnnotation(Link(relation, term), taxon, links))).toSet
   }
 
   def parseLink(text: String, propertyByName: Map[String, OWLObjectProperty], curieUtil: MultiCurieUtil): Option[Link] = text match {
