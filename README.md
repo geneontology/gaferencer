@@ -9,14 +9,12 @@ Usage: gaferencer [gaf|taxa] [options] <args>...
   --contexts <first.jsonld>,<second.jsonld>...
                            Paths to JSON-LD context files
   --ontfile <value>        Ontology IRI is local filename (default false)
-Command: gaf [options] <ontology> <gaf>
+Command: gaf <ontology> <gaf> <annotation-inferences-outfile>
 compute GAF inferences
-  --output-taxon-violations <value>
-                           Output taxon violations to a JSON file
-  --output-inferred-annotations <value>
-                           Output inferred annotations to a JSON file
   <ontology>               Ontology IRI
   <gaf>                    Path to GAF
+  <annotation-inferences-outfile>
+                           File to output annotation inferences (JSON)
 Command: taxa <ontology> <taxon-list> <taxon-table>
 compute taxon-by-GO table
   <ontology>               Ontology IRI
