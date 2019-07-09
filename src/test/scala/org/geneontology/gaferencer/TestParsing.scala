@@ -22,6 +22,8 @@ object TestParsing extends TestSuite {
       val line2 = "FOO\tFOO:2\tfoo2\t\tGO:0006412\tTEST:1\tIDA\t\tP\t\t\tgene\ttaxon:10090\t20100209\tFOO\tregulates(GO:0051594)\t"
       val line3 = "FOO\tFOO:2\tfoo2\t\tGO:0006412\tTEST:1\tIDA\t\tP\t\t\tgene\ttaxon:10090\t20100209\tFOO\tregulates(GO:0051594),occurs_in(GO:0005739)\t"
       val line4 = "FOO\tFOO:2\tfoo2\t\tGO:0006412\tTEST:1\tIDA\t\tP\t\t\tgene\ttaxon:10090\t20100209\tFOO\tregulates(GO:0051594),occurs_in(GO:0005739)|occurs_in(GO:0005739),negatively_regulates(GO:0051594)\t"
+      val line5 = "FOO\tFOO:1\tfoo1\t\tGO:0006412\tTEST:1\tIDA\t\tP\t\t\tgene\ttaxon:10090\t20100209\tFOO"
+      val line6 = "FOO\tFOO:1\tfoo1\t\tGO:0006412"
       val properties = Map(
         "regulates" -> Regulates,
         "negatively_regulates" -> NegativelyRegulates,
@@ -41,6 +43,10 @@ object TestParsing extends TestSuite {
       assert(res4.size == 2)
       assert(res4(TermWithTaxon(GOTerm, Mouse) -> ExtendedAnnotation(Link(relation, GOTerm), Mouse, Set(Link(Regulates, Class("http://purl.obolibrary.org/obo/GO_0051594")), Link(OccursIn, Class("http://purl.obolibrary.org/obo/GO_0005739"))))))
       assert(res4(TermWithTaxon(GOTerm, Mouse) -> ExtendedAnnotation(Link(relation, GOTerm), Mouse, Set(Link(NegativelyRegulates, Class("http://purl.obolibrary.org/obo/GO_0051594")), Link(OccursIn, Class("http://purl.obolibrary.org/obo/GO_0005739"))))))
+      val res5 = Gaferencer.processLine(line5, properties, cu)
+      assert(res5.size == 1)
+      val res6 = Gaferencer.processLine(line6, properties, cu)
+      assert(res6.size == 0)
     }
 
   }
