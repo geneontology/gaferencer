@@ -32,6 +32,6 @@ libraryDependencies ++= {
       "com.typesafe.scala-logging" %% "scala-logging"          % "3.9.2",
       "ch.qos.logback"             %  "logback-classic"        % "1.2.3",
       "org.codehaus.groovy"        %  "groovy-all"             % "2.5.1",
-      "com.lihaoyi"                %% "utest"                  % "0.6.9"     % Test
+      "com.lihaoyi"                %% "utest"                  % "0.7.4"     % Test
     )
 }
