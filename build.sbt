@@ -29,7 +29,7 @@ libraryDependencies ++= {
       "com.github.scopt"           %% "scopt"                  % "3.7.1",
       "io.circe"                   %% "circe-core"             % "0.11.1",
       "io.circe"                   %% "circe-generic"          % "0.11.1",
-      "com.outr"                   %% "scribe-slf4j"           % "2.7.10",
+      "com.outr"                   %% "scribe-slf4j"           % "2.7.12",
       "com.lihaoyi"                %% "utest"                  % "0.6.9"     % Test
     )
 }
