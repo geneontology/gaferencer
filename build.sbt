@@ -27,11 +27,9 @@ libraryDependencies ++= {
       "org.prefixcommons"          %  "curie-util"             % "0.0.2",
       "org.scalaz"                 %% "scalaz-core"            % "7.2.27",
       "com.github.scopt"           %% "scopt"                  % "3.7.1",
-      "io.circe"                   %% "circe-core"             % "0.11.2",
-      "io.circe"                   %% "circe-generic"          % "0.11.2",
-      "com.typesafe.scala-logging" %% "scala-logging"          % "3.9.2",
-      "ch.qos.logback"             %  "logback-classic"        % "1.2.3",
-      "org.codehaus.groovy"        %  "groovy-all"             % "2.5.1",
+      "io.circe"                   %% "circe-core"             % "0.11.1",
+      "io.circe"                   %% "circe-generic"          % "0.11.1",
+      "com.outr"                   %% "scribe-slf4j"           % "2.7.10",
       "com.lihaoyi"                %% "utest"                  % "0.6.9"     % Test
     )
 }
