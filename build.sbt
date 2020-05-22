@@ -25,7 +25,7 @@ libraryDependencies ++= {
       "org.semanticweb.elk"        %  "elk-owlapi"             % "0.4.3" exclude("org.slf4j", "slf4j-log4j12"),
       "org.obolibrary.robot"       %  "robot-core"             % "1.6.0" exclude("org.slf4j", "slf4j-log4j12"),
       "org.prefixcommons"          %  "curie-util"             % "0.0.2",
-      "org.scalaz"                 %% "scalaz-core"            % "7.2.30",
+      "org.scalaz"                 %% "scalaz-core"            % "7.3.1",
       "com.github.scopt"           %% "scopt"                  % "3.7.1",
       "io.circe"                   %% "circe-core"             % "0.11.2",
       "io.circe"                   %% "circe-generic"          % "0.11.2",
