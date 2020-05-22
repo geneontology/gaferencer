@@ -27,8 +27,8 @@ libraryDependencies ++= {
       "org.prefixcommons"          %  "curie-util"             % "0.0.2",
       "org.scalaz"                 %% "scalaz-core"            % "7.2.30",
       "com.github.scopt"           %% "scopt"                  % "3.7.1",
-      "io.circe"                   %% "circe-core"             % "0.11.2",
-      "io.circe"                   %% "circe-generic"          % "0.11.2",
+      "io.circe"                   %% "circe-core"             % "0.13.0",
+      "io.circe"                   %% "circe-generic"          % "0.13.0",
       "com.outr"                   %% "scribe-slf4j"           % "2.7.12",
       "com.lihaoyi"                %% "utest"                  % "0.7.4"     % Test
     )
