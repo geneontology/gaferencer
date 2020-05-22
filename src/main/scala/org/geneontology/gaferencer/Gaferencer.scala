@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.{Base64, UUID}
 
-import com.typesafe.scalalogging.LazyLogging
 import io.circe._
 import io.circe.syntax._
 import org.geneontology.gaferencer.Vocab._
@@ -19,7 +18,7 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.util.matching.Regex
 
-object Gaferencer extends LazyLogging {
+object Gaferencer {
 
   val LinkRegex: Regex = raw"(.+)\((.+)\)".r
 
@@ -53,21 +52,21 @@ object Gaferencer extends LazyLogging {
 
   def processTaxonList(file: Source, ontology: OWLOntology, curieUtil: MultiCurieUtil): Set[TaxonCheck] = {
     val taxa = file.getLines.flatMap(l => curieUtil.getIRI(l.trim).map(Class(_))).toSet
-    logger.info(s"Checking ${taxa.size} taxon terms")
+    scribe.info(s"Checking ${taxa.size} taxon terms")
     val reasoner = new ElkReasonerFactory().createReasoner(ontology)
     val goTerms = Set(MF, BP, CC).flatMap(reasoner.getSubClasses(_, false).getFlattened.asScala)
-    logger.info(s"Checking ${goTerms.size} GO terms")
+    scribe.info(s"Checking ${goTerms.size} GO terms")
     val termsWithTaxa = for {
       goTerm <- goTerms
       taxon <- taxa
     } yield TermWithTaxon(goTerm, taxon)
-    logger.info(s"Checking ${termsWithTaxa.size} combinations")
+    scribe.info(s"Checking ${termsWithTaxa.size} combinations")
     val (taxaTermsToTerms, taxaAxioms) = nameExpressions(termsWithTaxa)
     val manager = ontology.getOWLOntologyManager
     manager.addAxioms(ontology, taxaAxioms.asJava)
     reasoner.flush()
     val unsatisfiable = reasoner.getUnsatisfiableClasses.getEntities.asScala
-    logger.info(s"Unsatisfiable classes: ${unsatisfiable.size}")
+    scribe.info(s"Unsatisfiable classes: ${unsatisfiable.size}")
     val taxonChecks = (for {
       (termWithTaxon, taxonomicClass) <- taxaTermsToTerms
       isUnsatisfiable = unsatisfiable(taxonomicClass)
@@ -105,7 +104,7 @@ object Gaferencer extends LazyLogging {
     if (items.size < 13) Set.empty
     else {
       val maybeTaxon = items(12).split(raw"\|", -1).headOption.map(_.trim.replaceAllLiterally("taxon:", TaxonPrefix)).map(Class(_))
-      if (maybeTaxon.isEmpty) logger.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
+      if (maybeTaxon.isEmpty) scribe.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
       val aspect = items(8).trim
       val relation = AspectToGAFRelation(aspect)
       val term = Class(items(4).trim.replaceAllLiterally("GO:", GOPrefix))
@@ -121,14 +120,14 @@ object Gaferencer extends LazyLogging {
     case LinkRegex(relation, term) =>
       val maybeProperty = propertyByName.get(relation.trim)
       val maybeFiller = curieUtil.getIRI(term).map(Class(_))
-      if (maybeFiller.isEmpty) logger.warn(s"Could not find IRI for annotation extension filler: $term")
+      if (maybeFiller.isEmpty) scribe.warn(s"Could not find IRI for annotation extension filler: $term")
       for {
         property <- maybeProperty
         filler <- maybeFiller
       } yield Link(property, filler)
     case ""                        => None
     case _                         =>
-      logger.warn(s"Skipping badly formatted extension: $text")
+      scribe.warn(s"Skipping badly formatted extension: $text")
       None
   }
 
