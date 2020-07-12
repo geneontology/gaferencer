@@ -46,6 +46,7 @@ final case class Gaf(@Recurse
                      inferredAnnotationsOutfile: String)
     extends GaferencerCommand
 
+@HelpMessage("Compute taxon-by-GO table\n")
 final case class Taxa(@Recurse
                       common: CommonOptions,
                       @HelpMessage("Path to taxon list")
