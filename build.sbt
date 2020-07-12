@@ -6,7 +6,7 @@ name := "gaferencer"
 
 version := "0.4.1"
 
-scalaVersion := "2.12.11"
+scalaVersion := "2.13.3"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 

@@ -8,9 +8,9 @@ case class MultiCurieUtil(curieUtils: Seq[CurieUtil]) {
 
   import MultiCurieUtil._
 
-  def getIRI(curie: String): Option[String] = curieUtils.toStream.flatMap(_.getIri(curie).asScala).headOption
+  def getIRI(curie: String): Option[String] = curieUtils.to(LazyList).flatMap(_.getIri(curie).asScala).headOption
 
-  def getCURIE(iri: String): Option[String] = curieUtils.toStream.flatMap(_.getCurie(iri).asScala).headOption
+  def getCURIE(iri: String): Option[String] = curieUtils.to(LazyList).flatMap(_.getCurie(iri).asScala).headOption
 
 }
 
