@@ -29,7 +29,7 @@ libraryDependencies ++= {
     "io.circe"                   %% "circe-core"          % "0.13.0",
     "io.circe"                   %% "circe-generic"       % "0.13.0",
     "com.outr"                   %% "scribe-slf4j"        % "2.7.12",
-    "com.github.alexarchambault" %% "case-app"            % "2.0.3",
+    "com.github.alexarchambault" %% "case-app"            % "2.0.4",
     "com.lihaoyi"                %% "utest"               % "0.7.4" % Test
   )
 }
