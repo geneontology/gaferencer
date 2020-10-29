@@ -23,10 +23,35 @@ object Vocab {
   val PartOf = ObjectProperty("http://purl.obolibrary.org/obo/BFO_0000050")
   val IsActiveIn = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002432")
   val ColocalizesWith = ObjectProperty("http://purl.obolibrary.org/obo/RO_0002325")
+  val LocatedIn = ObjectProperty("http://purl.obolibrary.org/obo/RO_0001025")
   val AspectToGAFRelation: Map[String, OWLObjectProperty] = Map("P" -> InvolvedIn, "F" -> Enables, "C" -> PartOf)
+
   val AnnotationRelationsByAspect = Map(
-    BP -> Set(ActsUpstreamOfOrWithin, ActsUpstreamOfOrWithinPos, ActsUpstreamOfOrWithinNeg, ActsUpstreamOf, ActsUpstreamOfPos, ActsUpstreamOfNeg, InvolvedIn),
+    BP -> Set(ActsUpstreamOfOrWithin,
+              ActsUpstreamOfOrWithinPos,
+              ActsUpstreamOfOrWithinNeg,
+              ActsUpstreamOf,
+              ActsUpstreamOfPos,
+              ActsUpstreamOfNeg,
+              InvolvedIn),
     MF -> Set(Enables, ContributesTo),
-    CC -> Set(PartOf, IsActiveIn, ColocalizesWith))
+    CC -> Set(PartOf, IsActiveIn, ColocalizesWith)
+  )
+
+  val Qualifiers: Map[String, OWLObjectProperty] = Map(
+    "enables" -> Enables,
+    "contributes_to" -> ContributesTo,
+    "involved_in" -> InvolvedIn,
+    "acts_upstream_of" -> ActsUpstreamOf,
+    "acts_upstream_of_positive_effect" -> ActsUpstreamOfPos,
+    "acts_upstream_of_negative_effect" -> ActsUpstreamOfNeg,
+    "acts_upstream_of_or_within" -> ActsUpstreamOfOrWithin,
+    "acts_upstream_of_or_within_positive_effect" -> ActsUpstreamOfOrWithinPos,
+    "acts_upstream_of_or_within_negative_effect" -> ActsUpstreamOfOrWithinNeg,
+    "located_in" -> LocatedIn,
+    "part_of" -> PartOf,
+    "is_active_in" -> IsActiveIn,
+    "colocalizes_with" -> ColocalizesWith
+  )
 
 }
