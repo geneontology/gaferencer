@@ -128,14 +128,24 @@ object Gaferencer {
     val items = line.split("\t", -1)
     if (items.size < 13) Set.empty
     else {
+      val maybeQualifier = (items(3).split(raw"\|", -1).map(_.trim).filter(_.nonEmpty).to(Set) - "NOT").headOption
+      val maybeRelation = maybeQualifier
+        .map { qualifier =>
+          val maybeQualifierProp = Qualifiers.get(qualifier)
+          if (maybeQualifierProp.isEmpty) scribe.warn(s"Row with bad qualifier: $qualifier")
+          maybeQualifierProp
+        }
+        .getOrElse {
+          val aspect = items(8).trim
+          AspectToGAFRelation.get(aspect)
+        }
       val maybeTaxon =
         items(12).split(raw"\|", -1).headOption.map(_.trim.replace("taxon:", TaxonPrefix)).map(Class(_))
       if (maybeTaxon.isEmpty) scribe.warn(s"Skipping row with badly formatted taxon: ${items(12)}")
-      val aspect = items(8).trim
-      val relation = AspectToGAFRelation(aspect)
       val term = Class(items(4).trim.replace("GO:", GOPrefix))
       (for {
         taxon <- maybeTaxon.toIterable
+        relation <- maybeRelation.toIterable
         conjunction <- if (items.size > 15) items(15).split("\\|", -1) else Array("")
         links = conjunction.split(",", -1).to(Set).map(_.trim).flatMap(parseLink(_, propertyByName, curieUtil).to(Set))
       } yield (TermWithTaxon(term, taxon), ExtendedAnnotation(Link(relation, term), taxon, links))).to(Set)
