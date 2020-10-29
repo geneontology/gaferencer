@@ -4,7 +4,7 @@ organization := "org.geneontology"
 
 name := "gaferencer"
 
-version := "0.4.1"
+version := "0.5"
 
 scalaVersion := "2.13.3"
 
