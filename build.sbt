@@ -21,7 +21,7 @@ libraryDependencies ++= {
     "net.sourceforge.owlapi"      % "owlapi-distribution" % "4.5.26",
     "org.phenoscape"             %% "scowl"               % "1.4.1",
     "org.semanticweb.elk"         % "elk-owlapi"          % "0.4.3" exclude ("org.slf4j", "slf4j-log4j12"),
-    "org.obolibrary.robot"        % "robot-core"          % "1.7.0" exclude ("org.slf4j", "slf4j-log4j12"),
+    "org.obolibrary.robot"        % "robot-core"          % "1.7.2" exclude ("org.slf4j", "slf4j-log4j12"),
     "org.prefixcommons"           % "curie-util"          % "0.0.2",
     "org.scalaz"                 %% "scalaz-core"         % "7.3.7",
     "io.circe"                   %% "circe-core"          % "0.14.5",
