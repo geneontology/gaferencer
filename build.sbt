@@ -20,7 +20,7 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 
 libraryDependencies ++= {
   Seq(
-    "net.sourceforge.owlapi"      % "owlapi-distribution" % "4.5.18",
+    "net.sourceforge.owlapi"      % "owlapi-distribution" % "4.5.25",
     "org.phenoscape"             %% "scowl"               % "1.3.4",
     "org.semanticweb.elk"         % "elk-owlapi"          % "0.4.3" exclude ("org.slf4j", "slf4j-log4j12"),
     "org.obolibrary.robot"        % "robot-core"          % "1.7.0" exclude ("org.slf4j", "slf4j-log4j12"),
