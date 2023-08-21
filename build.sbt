@@ -10,8 +10,6 @@ scalaVersion := "2.13.11"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
-scalacOptions in Test ++= Seq("-Yrangepos")
-
 mainClass in Compile := Some("org.geneontology.gaferencer.Main")
 
 javaOptions += "-Xmx10G"
