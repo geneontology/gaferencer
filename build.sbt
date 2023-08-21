@@ -6,11 +6,9 @@ name := "gaferencer"
 
 version := "0.5"
 
-scalaVersion := "2.13.5"
+scalaVersion := "2.13.11"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-
-scalacOptions in Test ++= Seq("-Yrangepos")
 
 mainClass in Compile := Some("org.geneontology.gaferencer.Main")
 
@@ -25,10 +23,10 @@ libraryDependencies ++= {
     "org.semanticweb.elk"         % "elk-owlapi"          % "0.4.3" exclude ("org.slf4j", "slf4j-log4j12"),
     "org.obolibrary.robot"        % "robot-core"          % "1.7.0" exclude ("org.slf4j", "slf4j-log4j12"),
     "org.prefixcommons"           % "curie-util"          % "0.0.2",
-    "org.scalaz"                 %% "scalaz-core"         % "7.3.3",
+    "org.scalaz"                 %% "scalaz-core"         % "7.3.7",
     "io.circe"                   %% "circe-core"          % "0.13.0",
     "io.circe"                   %% "circe-generic"       % "0.13.0",
-    "com.outr"                   %% "scribe-slf4j"        % "3.5.1",
+    "com.outr"                   %% "scribe-slf4j"        % "3.5.5",
     "com.github.alexarchambault" %% "case-app"            % "2.0.4",
     "com.lihaoyi"                %% "utest"               % "0.7.8" % Test
   )
