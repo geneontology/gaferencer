@@ -24,8 +24,8 @@ libraryDependencies ++= {
     "org.obolibrary.robot"        % "robot-core"          % "1.7.0" exclude ("org.slf4j", "slf4j-log4j12"),
     "org.prefixcommons"           % "curie-util"          % "0.0.2",
     "org.scalaz"                 %% "scalaz-core"         % "7.3.7",
-    "io.circe"                   %% "circe-core"          % "0.14.5",
-    "io.circe"                   %% "circe-generic"       % "0.14.5",
+    "io.circe"                   %% "circe-core"          % "0.14.6",
+    "io.circe"                   %% "circe-generic"       % "0.14.6",
     "com.outr"                   %% "scribe-slf4j"        % "3.5.5",
     "com.github.alexarchambault" %% "case-app"            % "2.0.6",
     "com.lihaoyi"                %% "utest"               % "0.7.11" % Test
