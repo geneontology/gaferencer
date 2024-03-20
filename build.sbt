@@ -26,7 +26,7 @@ libraryDependencies ++= {
     "org.scalaz"                 %% "scalaz-core"         % "7.3.7",
     "io.circe"                   %% "circe-core"          % "0.14.5",
     "io.circe"                   %% "circe-generic"       % "0.14.5",
-    "com.outr"                   %% "scribe-slf4j"        % "3.5.5",
+    "com.outr"                   %% "scribe-slf4j"        % "3.13.1",
     "com.github.alexarchambault" %% "case-app"            % "2.0.6",
     "com.lihaoyi"                %% "utest"               % "0.7.11" % Test
   )
